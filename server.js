@@ -156,19 +156,26 @@ app.delete('/api/nuke', async (req, res) => {
 });
 
 // --- NEW ROUTE: AI Diet Generator ---
+// --- DEBUGGING ROUTE: AI Diet Generator ---
 app.post('/api/generate-diet', async (req, res) => {
+    console.log("1. Received diet request from frontend."); 
+
     try {
         const { prompt } = req.body;
-        // Get the Key from Render Environment Variables
         const apiKey = process.env.GEMINI_API_KEY;
 
+        // Check if Render actually gave us the key
         if (!apiKey) {
-            return res.status(500).json({ error: "Server Error: API Key is missing in Dashboard." });
+            console.error("CRITICAL: GEMINI_API_KEY is missing/undefined in Environment Variables!");
+            return res.status(500).json({ error: "Server Config Error: API Key missing." });
         }
+        console.log(`2. API Key found (First 4 chars): ${apiKey.substring(0, 4)}...`);
 
-        // We use Gemini 1.5 Flash (Fast & Cheap/Free)
+        // Use the safest, most standard model
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
         
+        console.log("3. Sending request to Google...");
+
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -177,18 +184,22 @@ app.post('/api/generate-diet', async (req, res) => {
             })
         });
 
+        console.log(`4. Google Status: ${response.status} ${response.statusText}`);
+
         const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.error.message);
+
+        // IF GOOGLE FAILED, LOG THE EXACT ERROR
+        if (!response.ok) {
+            console.error("❌ GOOGLE API ERROR DETAILS:", JSON.stringify(data, null, 2));
+            throw new Error(data.error?.message || `Google refused: ${response.statusText}`);
         }
 
-        // Send the result back to the Frontend
+        console.log("5. Success! Sending data to frontend.");
         res.json(data);
 
     } catch (err) {
-        console.error("AI Error:", err.message);
-        res.status(500).json({ error: "Failed to generate plan. Please try again." });
+        console.error("❌ FINAL SERVER ERROR:", err.message);
+        res.status(500).json({ error: err.message });
     }
 });
 
