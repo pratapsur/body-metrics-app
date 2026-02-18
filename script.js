@@ -519,33 +519,67 @@ function clearApiKey() {
 }
 async function generateDietPlan() {
     if (!userProfile) return;
+
+    // 1. Prepare Data
     const latestWeight = userEntries[userEntries.length - 1].weight;
-    // Note: AI Prompt needs Age. We calculate it here.
     const currentAge = calculateAge(userProfile.dob);
     const maintenance = calculateTDEE(latestWeight, userProfile.height, currentAge, userProfile.gender, userProfile.activity);
+    
     const gap = latestWeight - userProfile.goalWeight;
     let targetIntake = Math.round(maintenance);
     if (gap > 0) targetIntake -= 500; else targetIntake += 300;
     if (targetIntake < 1200) targetIntake = 1200;
+
     const macros = calculateMacros(targetIntake, userProfile.diet);
+
+    // 2. Setup UI
     const resultsArea = document.getElementById('dietResults');
     const loader = document.getElementById('dietLoading');
     resultsArea.innerHTML = '';
     loader.classList.remove('hidden');
-    const prompt = `You are an expert nutritionist. Create a 7-day diet plan. Stats: ${latestWeight}kg, Goal: ${userProfile.goalWeight}kg. Target: ${targetIntake} kcal/day. Diet: ${userProfile.diet}. Macros: ${macros.p}g Protein, ${macros.c}g Carbs, ${macros.f}g Fats. RETURN ONLY RAW HTML. Use this structure for 7 days: <div class="day-card"><h3>Day X</h3><div class="meal-row"><strong>Breakfast</strong> Meal - Cals</div><div class="meal-row"><strong>Lunch</strong> Meal - Cals</div><div class="meal-row"><strong>Dinner</strong> Meal - Cals</div><div class="meal-row"><strong>Snack</strong> Meal - Cals</div></div>`;
-    const selectedModel = document.getElementById('modelSelector').value;
+
+    // 3. Build the Prompt
+    const prompt = `You are an expert nutritionist. Create a 7-day diet plan. 
+    Stats: ${latestWeight}kg, Goal: ${userProfile.goalWeight}kg. 
+    Target: ${targetIntake} kcal/day. Diet: ${userProfile.diet}. 
+    Macros: ${macros.p}g Protein, ${macros.c}g Carbs, ${macros.f}g Fats. 
+    RETURN ONLY RAW HTML. No markdown, no '''html tags. 
+    Use this structure for 7 days: 
+    <div class="day-card">
+        <h3>Day X</h3>
+        <div class="meal-row"><strong>Breakfast</strong> Meal - Cals</div>
+        <div class="meal-row"><strong>Lunch</strong> Meal - Cals</div>
+        <div class="meal-row"><strong>Dinner</strong> Meal - Cals</div>
+        <div class="meal-row"><strong>Snack</strong> Meal - Cals</div>
+    </div>`;
+
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${savedApiKey}`;
-        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+        // 4. Call OUR Backend (The Fix!)
+        const response = await fetch(`${API_URL}/generate-diet`, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ prompt }) 
+        });
+
         const data = await response.json();
-        if (response.status === 429) throw new Error("Speed Limit Hit!");
-        if (data.error) throw new Error(data.error.message);
-        const aiText = data.candidates[0].content.parts[0].text;
-        resultsArea.innerHTML = aiText.replace(/```html/g, '').replace(/```/g, '');
+        if (!response.ok) throw new Error(data.error || "AI Generation Failed");
+
+        // 5. Display Result
+        let aiText = data.candidates[0].content.parts[0].text;
+        // Clean up any Markdown formatting just in case
+        aiText = aiText.replace(/```html/g, '').replace(/```/g, '');
+        
+        resultsArea.innerHTML = aiText;
         document.getElementById('dietSubtitle').textContent = `Target: ${targetIntake} kcal | ${userProfile.diet.toUpperCase()}`;
+
     } catch (error) {
-        resultsArea.innerHTML = `<div class="card" style="border: 1px solid var(--danger); color: var(--danger);"><h3>Error</h3><p>${error.message}</p></div>`;
-    } finally { loader.classList.add('hidden'); }
+        resultsArea.innerHTML = `<div class="card" style="border: 1px solid var(--danger); color: var(--danger);">
+            <h3>Error</h3>
+            <p>${error.message}</p>
+        </div>`;
+    } finally { 
+        loader.classList.add('hidden'); 
+    }
 }
 function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));

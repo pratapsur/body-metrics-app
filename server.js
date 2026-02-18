@@ -155,6 +155,43 @@ app.delete('/api/nuke', async (req, res) => {
     }
 });
 
+// --- NEW ROUTE: AI Diet Generator ---
+app.post('/api/generate-diet', async (req, res) => {
+    try {
+        const { prompt } = req.body;
+        // Get the Key from Render Environment Variables
+        const apiKey = process.env.GEMINI_API_KEY;
+
+        if (!apiKey) {
+            return res.status(500).json({ error: "Server Error: API Key is missing in Dashboard." });
+        }
+
+        // We use Gemini 1.5 Flash (Fast & Cheap/Free)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        // Send the result back to the Frontend
+        res.json(data);
+
+    } catch (err) {
+        console.error("AI Error:", err.message);
+        res.status(500).json({ error: "Failed to generate plan. Please try again." });
+    }
+});
+
 // --- Catch-All Route ---
 app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
