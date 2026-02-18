@@ -172,7 +172,7 @@ app.post('/api/generate-diet', async (req, res) => {
         console.log(`2. API Key found (First 4 chars): ${apiKey.substring(0, 4)}...`);
 
         // Use the safest, most standard model
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
         
         console.log("3. Sending request to Google...");
 
