@@ -31,6 +31,8 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    /* FIX: Removes horizontal scrollbar if elements are too wide */
+    overflow-x: hidden; 
 }
 
 /* --- Layout Utilities --- */
@@ -40,7 +42,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 40px 20px; /* Added more padding for laptop vertical spacing */
+    min-height: 100vh; /* Ensures it takes full height */
 }
 
 .hidden { display: none !important; }
@@ -184,48 +187,61 @@ input:focus, select:focus { border-color: var(--accent); }
 .stat-mini .label { font-size: 0.75rem; color: var(--text-muted); display: block; }
 .stat-mini .value { font-size: 1rem; font-weight: 600; }
 
-/* --- APP LAYOUT --- */
-.app-layout { display: flex; flex-direction: column; height: 100vh; }
+/* --- APP LAYOUT (FIXED FOR LAPTOP) --- */
+.app-layout { 
+    display: flex; 
+    flex-direction: column; 
+    min-height: 100vh; /* Allow it to grow, don't force fixed height */
+    height: auto; 
+}
 
 .navbar {
-    background: var(--bg-card); padding: 0 20px; height: 60px;
-    display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333;
+    background: var(--bg-card); 
+    padding: 0 40px; /* Wider padding for laptop */
+    height: 70px;
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    border-bottom: 1px solid #333;
+    position: sticky; /* Keeps navbar at top when scrolling */
+    top: 0;
+    z-index: 100;
 }
-.nav-brand { font-weight: 700; font-size: 1.2rem; color: var(--accent); }
+
+.nav-brand { font-weight: 700; font-size: 1.4rem; color: var(--accent); }
 .nav-links { display: flex; gap: 20px; }
 
 .nav-item {
     background: none; border: none; color: var(--text-muted); cursor: pointer;
-    font-size: 0.9rem; display: flex; align-items: center; gap: 6px;
-    padding: 8px 12px; border-radius: 6px; transition: 0.2s;
+    font-size: 0.95rem; display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: 6px; transition: 0.2s;
 }
 .nav-item:hover { color: white; background: #2c2c2c; }
 .nav-item.active { color: var(--accent); background: rgba(45, 212, 191, 0.1); }
 
 .content-area { 
-    padding: 20px; 
-    max-width: 1000px; 
+    padding: 30px 40px; 
+    max-width: 1200px; /* WIDER for Laptop */
     margin: 0 auto; 
     width: 100%; 
-    flex: 1; 
-    overflow-y: auto; 
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    flex: 1;
+    /* FIX: Removed overflow-y to stop double scroll */
 }
 
-/* Hide Scrollbar for Chrome/Safari/Webkit */
-.content-area::-webkit-scrollbar {
-    display: none;
+/* Dashboard Grid - Optimized for Laptop */
+.dashboard-grid { 
+    display: grid; 
+    /* This makes columns flexible but keeps them reasonable size */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+    gap: 20px; 
 }
 
-/* Dashboard Grid */
-.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-.info-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius); border: 1px solid #333; }
-.info-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
-.info-value { font-size: 1.8rem; font-weight: 700; color: white; }
+.info-card { background: var(--bg-card); padding: 25px; border-radius: var(--radius); border: 1px solid #333; }
+.info-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; }
+.info-value { font-size: 2rem; font-weight: 700; color: white; }
 .info-value.accent { color: var(--accent); }
-.info-badge { display: inline-block; font-size: 0.75rem; padding: 2px 8px; background: #333; border-radius: 4px; margin-top: 5px; }
-.info-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 5px; }
+.info-badge { display: inline-block; font-size: 0.8rem; padding: 2px 8px; background: #333; border-radius: 4px; margin-top: 5px; }
+.info-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 5px; }
 
 /* LAYOUT HELPERS */
 .full-width { 
@@ -233,17 +249,17 @@ input:focus, select:focus { border-color: var(--accent); }
     max-width: none;
     width: 100%;
 }
-.log-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.log-row input { flex: 1; }
-.log-row button { width: auto; padding: 0 30px; margin: 0; }
+.log-row { display: flex; gap: 15px; flex-wrap: wrap; }
+.log-row input { flex: 1; padding: 14px; } /* Bigger inputs for desktop */
+.log-row button { width: auto; padding: 0 40px; margin: 0; }
 
 /* --- ANALYTICS & DIET STYLES --- */
-.analytics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-.chart-card { height: 400px; max-width: none; }
-.chart-wrapper { position: relative; height: 320px; width: 100%; margin-top: 10px; }
+.analytics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+.chart-card { height: 450px; max-width: none; }
+.chart-wrapper { position: relative; height: 360px; width: 100%; margin-top: 15px; }
 
-.calorie-card { height: 400px; max-width: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-.donut-wrapper { position: relative; height: 220px; width: 220px; margin: 10px 0; cursor: pointer; }
+.calorie-card { height: 450px; max-width: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+.donut-wrapper { position: relative; height: 240px; width: 240px; margin: 10px 0; cursor: pointer; }
 
 .donut-inner {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -259,7 +275,7 @@ input:focus, select:focus { border-color: var(--accent); }
 .cal-label { font-size: 0.8rem; color: var(--text-muted); }
 .macro-row { font-size: 0.9rem; font-weight: 600; color: #fff; margin: 4px 0; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-.cal-details { width: 100%; padding: 10px; background: var(--bg-input); border-radius: 8px; font-size: 0.85rem; }
+.cal-details { width: 100%; padding: 15px; background: var(--bg-input); border-radius: 8px; font-size: 0.9rem; }
 .cal-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; color: var(--text-muted); }
 .cal-row:last-child { margin-bottom: 0; }
 
@@ -315,84 +331,44 @@ input:focus, select:focus { border-color: var(--accent); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 800px) {
-    .analytics-grid { grid-template-columns: 1fr; }
-    .chart-card, .calorie-card { height: auto; }
-    .log-row { flex-direction: column; }
-    .log-row button { width: 100%; padding: 12px; }
-    .diet-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-    .diet-header button, .model-dropdown { width: 100%; }
-    .card { padding: 20px; } /* Smaller padding on mobile */
-
-    /* Responsive Navbar */
-    .navbar {
-        flex-direction: column;
-        height: auto;
-        padding: 15px;
-        gap: 15px;
-    }
-    
-    .nav-links {
-        width: 100%;
-        display: flex;
-        justify-content: space-between; /* Distribute evenly */
-        gap: 5px;
-    }
-    
-    .nav-item {
-        padding: 8px;
-        font-size: 0.8rem;
-        flex: 1; /* Make items grow to fill space */
-        justify-content: center;
-        flex-direction: column; /* Stack Icon above Text */
-        gap: 4px;
-        text-align: center;
-    }
-    
-    .nav-brand {
-        margin-bottom: 5px;
-    }
-}
-
 /* --- LOG TABLE STYLES --- */
 .table-responsive { 
     overflow-x: auto; 
     margin-top: 15px; 
-    scrollbar-width: none; /* Hide scrollbar Firefox */
-    -ms-overflow-style: none; /* Hide scrollbar IE */
-}
-.table-responsive::-webkit-scrollbar {
-    display: none; /* Hide scrollbar Chrome/Safari */
+    border-radius: 8px;
+    border: 1px solid #333;
 }
 
 .log-table { 
     width: 100%; 
-    min-width: 500px; /* Forces scroll on small screens */
+    min-width: 500px; 
     border-collapse: collapse; 
     text-align: left; 
-    font-size: 0.9rem; 
+    font-size: 0.95rem; 
 }
 .log-table th { 
     color: var(--text-muted); 
-    padding: 12px 15px; 
+    padding: 15px 20px; 
+    background: #252525;
     border-bottom: 1px solid #333; 
     text-transform: uppercase; 
     font-size: 0.75rem; 
-    white-space: nowrap; /* Prevent wrap */
+    font-weight: 700;
 }
 .log-table td { 
-    padding: 15px; 
+    padding: 15px 20px; 
     border-bottom: 1px solid #252525;
-    white-space: nowrap; /* Prevent wrap */
 }
+.log-table tr:last-child td { border-bottom: none; }
 .btn-delete:hover { color: var(--danger) !important; }
+
 /* --- FOOTER STYLES --- */
 .site-footer {
     width: 100%;
-    background-color: var(--surface); /* Dark grey to match cards */
-    border-top: 1px solid var(--border);
-    padding: 1.5rem 0;
-    margin-top: auto; /* Pushes footer to bottom */
+    background-color: var(--bg-card); /* Match card color for seamless look */
+    border-top: 1px solid #333;
+    padding: 2rem 0;
+    margin-top: auto; 
     position: relative;
     z-index: 10;
 }
@@ -400,11 +376,11 @@ input:focus, select:focus { border-color: var(--accent); }
 .footer-content {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* Stacks nicely on mobile */
+    flex-wrap: wrap; 
     gap: 1rem;
 }
 
@@ -430,13 +406,26 @@ input:focus, select:focus { border-color: var(--accent); }
 }
 
 .social-links a:hover {
-    color: var(--accent); /* Turns Teal on hover */
+    color: var(--accent); 
 }
 
-/* Mobile Responsiveness for Footer */
-@media (max-width: 600px) {
-    .footer-content {
-        flex-direction: column;
-        text-align: center;
-    }
+/* --- MOBILE RESPONSIVENESS (Overwrites for small screens) --- */
+@media (max-width: 800px) {
+    .content-area { padding: 20px; }
+    .navbar { padding: 0 20px; height: auto; flex-direction: column; gap: 15px; padding-bottom: 15px;}
+    .nav-links { width: 100%; justify-content: space-between; gap: 5px; }
+    .nav-item { flex: 1; justify-content: center; flex-direction: column; text-align: center; padding: 8px; font-size: 0.8rem; }
+    .nav-brand { margin-bottom: 5px; }
+
+    .analytics-grid { grid-template-columns: 1fr; }
+    .chart-card, .calorie-card { height: auto; }
+    
+    .log-row { flex-direction: column; }
+    .log-row button { width: 100%; padding: 12px; }
+    
+    .diet-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .diet-header button, .model-dropdown { width: 100%; }
+    
+    .card { padding: 20px; }
+    .footer-content { flex-direction: column; text-align: center; }
 }
